@@ -1,0 +1,93 @@
+***create db***
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///year.csv' AS year CREATE (n: year) set n=year;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///artist_popular.csv' AS artist_popular CREATE (n: artist_popular) set n=artist_popular;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///artist_not_popular.csv' AS artist_not_popular CREATE (n: artist_not_popular) set n=artist_not_popular;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///songs_popular.csv' AS songs_popular CREATE (n: songs_popular) set n=songs_popular;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///songs_not_popular.csv' AS songs_not_popular CREATE (n: songs_not_popular) set n=songs_not_popular;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///songs_explicit.csv' AS songs_explicit CREATE (n: songs_explicit) SET n=songs_explicit;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///songs_not_explicit.csv' AS songs_not_explicit CREATE (n: songs_not_explicit) set n=songs_not_explicit;
+
+:auto USING PERIODIC COMMIT 2000
+LOAD CSV WITH HEADERS FROM 'file:///songs_stat.csv' AS songs_stat CREATE (n: songs_stat) set n=songs_stat;
+
+
+***create indexes***
+
+CREATE INDEX ON :year(year);
+
+CREATE INDEX ON :artist_popular(index);
+
+CREATE INDEX ON :artist_not_popular(index);
+
+CREATE INDEX ON :songs_popular(index);
+
+CREATE INDEX ON :songs_not_popular(index);
+
+CREATE INDEX ON :songs_explicit(index);
+
+CREATE INDEX ON :songs_not_explicit(index);
+
+CREATE INDEX ON :songs_stat(index);
+
+
+***convert values***
+MATCH (y:year) SET y.year_y = toInteger(y.year_y) SET y.acousticness_y = toFloat(y.acousticness_y) SET y.danceability_y = toFloat(y.danceability_y) SET y.duration_ms_y = toFloat(y.duration_ms_y) SET y.energy_y = toFloat(y.energy_y) SET y.instrumentalness_y = toFloat(y.instrumentalness_y) SET y.liveness_y = toFloat(y.liveness_y) SET y.loudness_y = toFloat(y.loudness_y) SET y.key_y = toInteger(y.key_y) SET y.mode_y = toInteger(y.mode_y) SET y.popularity_y = toInteger(y.popularity_y) SET y.speechiness_y = toFloat(y.speechiness_y) SET y.tempo_y = toFloat(y.tempo_y) SET y.valence_y = toFloat(y.valence_y);
+
+MATCH (a:artist_popular) SET a.acousticness_a = toFloat(a.acousticness_a) SET a.danceability_a = toFloat(a.danceability_a) SET a.duration_ms_a = toFloat(a.duration_ms_a) SET a.energy_a = toFloat(a.energy_a) SET a.instrumentalness_a = toFloat(a.instrumentalness_a) SET a.liveness_a = toFloat(a.liveness_a) SET a.loudness_a = toFloat(a.loudness_a) SET a.key_a = toInteger(a.key_a) SET a.mode_a = toInteger(a.mode_a) SET a.popularity_a = toInteger(a.popularity_a) SET a.speechiness_a = toFloat(a.speechiness_a) SET a.tempo_a = toFloat(a.tempo_a) SET a.valence_a = toFloat(a.valence_a) SET a.count_a = toInteger(a.count_a);
+
+MATCH (a:artist_not_popular) SET a.acousticness_a = toFloat(a.acousticness_a) SET a.danceability_a = toFloat(a.danceability_a) SET a.duration_ms_a = toFloat(a.duration_ms_a) SET a.energy_a = toFloat(a.energy_a) SET a.instrumentalness_a = toFloat(a.instrumentalness_a) SET a.liveness_a = toFloat(a.liveness_a) SET a.loudness_a = toFloat(a.loudness_a) SET a.key_a = toInteger(a.key_a) SET a.mode_a = toInteger(a.mode_a) SET a.popularity_a = toInteger(a.popularity_a) SET a.speechiness_a = toFloat(a.speechiness_a) SET a.tempo_a = toFloat(a.tempo_a) SET a.valence_a = toFloat(a.valence_a) SET a.count_a = toInteger(a.count_a);
+
+MATCH (s:songs_popular) SET s.popularity = toInteger(s.popularity) SET s.year = toInteger(s.year);
+
+MATCH (s:songs_not_popular) SET s.popularity = toInteger(s.popularity) SET s.year = toInteger(s.year);
+
+MATCH (s:songs_explicit) SET s.year = toInteger(s.year);
+
+MATCH (s:songs_not_explicit) SET s.year = toInteger(s.year);
+
+MATCH (s:songs_stat) SET s.acousticness = toFloat(s.acousticness) SET s.danceability = toFloat(s.danceability) SET s.duration_ms = toFloat(s.duration_ms) SET s.energy = toFloat(s.energy) SET s.explicit = toInteger(s.explicit) SET s.instrumentalness = toFloat(s.instrumentalness) SET s.key = toInteger(s.key) SET s.liveness = toFloat(s.liveness) SET s.loudness = toFloat(s.loudness) SET s.mode = toInteger(s.mode) SET s.popularity = toInteger(s.popularity) SET s.speechiness = toFloat(s.speechiness) SET s.tempo = toFloat(s.tempo) SET s.valence = toFloat(s.valence);
+
+
+***relationships***
+
+MATCH (s:songs_popular),(a:artist_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_not_popular),(a:artist_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_popular),(a:artist_not_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_not_popular),(a:artist_not_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_explicit),(a:artist_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_not_explicit),(a:artist_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_explicit),(a:artist_not_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (s:songs_not_explicit),(a:artist_not_popular) WHERE s.artists = a.artists_a CREATE (s)-[:BY]->(a);
+
+MATCH (p:songs_popular),(s:songs_stat) WHERE p.name = s.name CREATE (p)-[:HAS_DATA]->(s);
+
+MATCH (p:songs_not_popular),(s:songs_stat) WHERE p.name = s.name CREATE (p)-[:HAS_DATA]->(s);
+
+MATCH (e:songs_explicit),(s:songs_stat) WHERE e.name = s.name CREATE (e)-[:HAS_DATA_E]->(s);
+
+MATCH (e:songs_not_explicit),(s:songs_stat) WHERE e.name = s.name CREATE (e)-[:HAS_DATA_E]->(s);
+
+MATCH (s:songs_popular),(y:year) WHERE s.year = y.year_y CREATE (s)-[:PUBLISHED]->(y);
+
+MATCH (s:songs_not_popular),(y:year) WHERE s.year = y.year_y CREATE (s)-[:PUBLISHED]->(y);
